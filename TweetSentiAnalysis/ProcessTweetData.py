@@ -11,6 +11,28 @@ import os
 import datetime
 import pandas as pd
 
+#function to Create table 
+def create_table(conn, create_table_sql):
+    try:
+        c = conn.cursor()
+        c.execute(create_table_sql)
+    except Error as e:
+        print(e)
+
+def execute_sql_statement(sql_statement, conn):
+    cur = conn.cursor()
+    cur.execute(sql_statement)
+    rows = cur.fetchall()
+    return rows
+
+#function to drop the table
+def drop_table(conn, drop_table_sql):
+    try:
+        c = conn.cursor()
+        c.execute(drop_table_sql)
+    except Error as e:
+        print(e)    
+
 month_dict={'January':1,
             'February':2,
             'March':3,
@@ -37,27 +59,6 @@ def read_tweetdata(filename):
         
     return tweetlist
 
-#function to create a sqllite db file and returns connection
-def create_connection(db_file, delete_db=False):
-   if delete_db and os.path.exists(db_file):
-        os.remove(db_file)
-    
-   conn = None
-   try:
-       conn = sqlite3.connect(db_file)
-       conn.execute("PRAGMA foreign_keys = 1")
-   except Error as e:
-       print(e)
-    
-   return conn
-
-#function to Create table 
-def create_table(conn, create_table_sql):
-    try:
-        c = conn.cursor()
-        c.execute(create_table_sql)
-    except Error as e:
-        print(e)
 
 #function to insert tweets into table
 def insert_tweetdata(conn, values):
@@ -69,14 +70,6 @@ def insert_tweetdata(conn, values):
     except Error as e:
         print(e)
   
-#function to drop the table
-def drop_table(conn, drop_table_sql):
-    try:
-        c = conn.cursor()
-        c.execute(drop_table_sql)
-    except Error as e:
-        print(e)    
-
 #function to query all tweets
 def query_tweetdata(conn):
     sql = ''' SELECT * FROM Tweet_Data;'''
@@ -108,10 +101,9 @@ def get_tweetdate(unformatted):
     return tdate
             
 #function to read data from file,pre process and load to database
-def ProcessTweetData():
+def ProcessTweetData(conn,dataset):
     try:
-        tweets_list=read_tweetdata("user-tweets.jsonl")
-        conn=create_connection("SentimentAnalysis.db")
+        tweets_list=read_tweetdata(dataset)
         
         drop_table_sql='''DROP TABLE Tweet_data;'''
         drop_table(conn,drop_table_sql)
@@ -120,20 +112,11 @@ def ProcessTweetData():
         create_table(conn,tweet_table)
         
         count=0
-        for eachrec in tweets_list:
-                tweetdata=(count+1,eachrec[0],eachrec[2],get_tweetdate(eachrec[1]))            
+        with conn:
+            for eachrec in tweets_list:
+                tweetdata=(count+1,eachrec[0],eachrec[2],get_tweetdate(eachrec[1]))
                 insert_tweetdata(conn,tweetdata)
                 count+=1
         
-        query_tweetdatapd(conn)
-        
-        conn.commit()
-        conn.close()
-        
-        
     except Error as e:
-        print(e)   
-    finally:
-        if(conn):
-            conn.close()
-        
+        print(e)
