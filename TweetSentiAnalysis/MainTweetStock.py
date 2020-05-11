@@ -1,10 +1,24 @@
+###################################################################################
+#Start of the project
+#Loads Elon Musk tweet data
+#Loads Tesla Stock data
+#Cleans tweet data and applies sentiment analysis
+#Plots correlation of plots of tweet v/s stock prices
+###################################################################################
 from IPython.display import display, HTML
 import pandas as pd
+import numpy as np
 import sqlite3
 import os
+import matplotlib.pyplot
 from sqlite3 import Error
-from ProcessTweetData import ProcessTweetData
-from ProcessTeslaStkData import ProcessTeslaStkData
+from processtweetdata import processtweetdata
+from processtweetdata import query_tweetdatapd
+from processteslastkdata import processteslastkdata
+from processteslastkdata import query_telsastkdatapd
+from calculatetweetscores import calculatetweetscores
+
+
 
 #function to create a sqllite db file and returns connection
 def create_connection(db_file, delete_db=False):
@@ -44,33 +58,30 @@ def drop_table(conn, drop_table_sql):
         print(e)    
 
 #StartTweetAnalysis - Start function of Project
-def MainTweetStock():
-	elontweetdataset="user-tweets.jsonl"
-	teslastockdataset="TSLA.csv"
-	dbfile="SentimentAnalysis.db"
+def maintweetstock():
+  elontweetdataset="user-tweets.jsonl"
+  teslastockdataset="TSLA.csv"
+  dbfile="SentimentAnalysis.db"
 
-	try: 
-		conn= create_connection(dbfile,True)
-		
-		with conn:
-			ProcessTweetData(conn,elontweetdataset)
-			ProcessTeslaStkData(conn,teslastockdataset)
+  try: 
+    conn= create_connection(dbfile,True)
+    
+    with conn:
+      processtweetdata(conn,elontweetdataset)
+      processteslastkdata(conn,teslastockdataset)
+      calculatetweetscores(conn)
+    
+    conn.commit()
 
-		conn.commit()
+    query_tweetdatapd(conn)
+    query_telsastkdatapd(conn)
 
-		query_tweetdatapd(conn)
-		query_telsastkdatapd(conn)
-
-	except Error as e:
-		print(e)
-	finally:
-		if(conn):
-			conn.close()
+  except Error as e:
+    print(e)
+  finally:
+    if(conn):
+      conn.close()
 
 
 ##Start by calling explicitly
-MainTweetStock()
-
-
-
-
+maintweetstock()

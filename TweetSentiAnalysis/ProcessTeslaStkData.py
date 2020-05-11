@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Fri May  1 09:39:06 2020
-
-@author: supreeth.ks
-"""
+###################################################################################
+#processteslastkdata reads the Tesla Stock data from the dataset and extracts
+#Date,Open,Higher,Low,Close,Adj,Volume
+#Inserts formatted data into table
+###################################################################################
 from IPython.display import display, HTML
 import pandas as pd
 import sqlite3
@@ -46,7 +44,7 @@ def query_telsastkdatapd(conn):
     display(df)
 
 
-def ProcessTeslaStkData(conn,dataset):
+def processteslastkdata(conn,dataset):
     try:
         Date =[]
         Op=[]

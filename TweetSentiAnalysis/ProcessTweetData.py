@@ -1,5 +1,5 @@
 ###################################################################################
-#ProcessTweetData reads the tweet data from the dataset and extracts
+#processtweetdata reads the tweet data from the dataset and extracts
 #User,Tweet and the Tweet date and time
 #Inserts formatted data into table
 ###################################################################################
@@ -101,11 +101,11 @@ def get_tweetdate(unformatted):
     return tdate
             
 #function to read data from file,pre process and load to database
-def ProcessTweetData(conn,dataset):
+def processtweetdata(conn,dataset):
     try:
         tweets_list=read_tweetdata(dataset)
         
-        drop_table_sql='''DROP TABLE Tweet_data;'''
+        drop_table_sql='''DROP TABLE Tweet_Data;'''
         drop_table(conn,drop_table_sql)
         
         tweet_table="CREATE TABLE Tweet_data (ID INTEGER PRIMARY KEY,User_ID TEXT,Tweet_Text TEXT,Creation_dt DATE)"
