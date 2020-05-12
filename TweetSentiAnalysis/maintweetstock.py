@@ -17,45 +17,11 @@ from processtweetdata import query_tweetdatapd
 from processteslastkdata import processteslastkdata
 from processteslastkdata import query_telsastkdatapd
 from calculatetweetscores import calculatetweetscores
-
-
-
-#function to create a sqllite db file and returns connection
-def create_connection(db_file, delete_db=False):
-   if delete_db and os.path.exists(db_file):
-        os.remove(db_file)
-    
-   conn = None
-   try:
-       conn = sqlite3.connect(db_file)
-       conn.execute("PRAGMA foreign_keys = 1")
-   except Error as e:
-       print(e)
-    
-   return conn
-
-#function to Create table 
-def create_table(conn, create_table_sql):
-    try:
-        c = conn.cursor()
-        c.execute(create_table_sql)
-    except Error as e:
-        print(e)
-
-
-def execute_sql_statement(sql_statement, conn):
-    cur = conn.cursor()
-    cur.execute(sql_statement)
-    rows = cur.fetchall()
-    return rows
-
-#function to drop the table
-def drop_table(conn, drop_table_sql):
-    try:
-        c = conn.cursor()
-        c.execute(drop_table_sql)
-    except Error as e:
-        print(e)    
+from plotsaresults import plotpiechart
+from plotsaresults import plotdailystkprvar
+from plotsaresults import plotscores
+from plotsaresults import plotfinalinteract
+from genericdbcalls import create_connection
 
 #StartTweetAnalysis - Start function of Project
 def maintweetstock():
@@ -63,9 +29,8 @@ def maintweetstock():
   teslastockdataset="TSLA.csv"
   dbfile="SentimentAnalysis.db"
 
+  conn= create_connection(dbfile,True)
   try: 
-    conn= create_connection(dbfile,True)
-    
     with conn:
       processtweetdata(conn,elontweetdataset)
       processteslastkdata(conn,teslastockdataset)
@@ -75,7 +40,11 @@ def maintweetstock():
 
     query_tweetdatapd(conn)
     query_telsastkdatapd(conn)
-
+    plotpiechart(conn)
+    plotdailystkprvar(conn)
+    plotscores(conn)
+    plotfinalinteract(conn)
+    
   except Error as e:
     print(e)
   finally:

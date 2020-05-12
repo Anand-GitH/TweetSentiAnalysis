@@ -9,9 +9,18 @@ import pandas as pd
 import numpy as np
 from preproctweets import clean_tweets
 from sanalysis import sentimentanalyzer
+from genericdbcalls import create_table
+from genericdbcalls import execute_sql_statement
+from genericdbcalls import drop_table
 
 def calculatetweetscores(conn):
     
+    sql_statement='''DROP TABLE Tweet_Scores;'''
+    drop_table(conn,sql_statement)
+
+    sql_statement='''CREATE TABLE Tweet_Scores(ID INTEGER PRIMARY KEY,Score_Polarity TEXT,Score REAL);'''
+    create_table(conn,sql_statement)
+
     df = pd.read_sql_query("SELECT * FROM Tweet_Data", conn)
  
     scores = []
@@ -24,12 +33,13 @@ def calculatetweetscores(conn):
 
     df1 = pd.DataFrame(scores)
     df1.columns = ['Score_Polarity', 'Score']
+
+    df.drop(['User_ID','Tweet_Text','Creation_dt'],axis=1)
     
     merged_df = df.merge(df1, left_index = True, right_index = True)
     
-    #merged_df['Date_Created'] = merged_df['Creation_dt']
-    #merged_df.drop('Creation_dt')
-    
-    #grouped_df = merged_df.groupby('Date_Created')
-    
-    merged_df.to_sql('Tweet_Scores',conn, if_exists = 'replace')
+    merged_df=merged_df.drop(['User_ID','Tweet_Text','Creation_dt'],axis=1)
+    merged_df=merged_df.rename_axis(None)
+        
+    merged_df.to_sql('Tweet_Scores',conn,index=False,if_exists = 'append')
+

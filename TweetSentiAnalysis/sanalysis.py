@@ -16,17 +16,21 @@ def sentimentanalyzer(tweet):
     score = analyzer.polarity_scores(tweet)
     tweet_score.append(score)
     df = pd.DataFrame(tweet_score)
+    
+    for i,row in df.iterrows():
+        row['neg']=-row['neg']
+    
     for i, row in df.iterrows():
         if row['compound']<0:
-            row['neg'] = abs(row['neg']) + abs(row['compound'])
+            row['neg'] = row['neg'] + row['compound']
         elif row['compound'] > 0:
             row['pos'] = row['pos'] + row['compound']
     df.drop('compound', axis = 1, inplace = True)
     for i,rows in df.iterrows():
-        if row['pos'] > row['neg'] and row['pos'] > row['neu']:
+        if row['pos'] > abs(row['neg']) and row['pos'] > row['neu']:
             return ("positive", row['pos'])
             
-        elif row['neg']>row['pos'] and row['neg'] > row['neu']:
+        elif abs(row['neg'])>row['pos'] and abs(row['neg']) > row['neu']:
             return ("negative", row['neg'])
             
         else:

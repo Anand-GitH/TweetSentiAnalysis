@@ -7,29 +7,9 @@ from IPython.display import display, HTML
 import pandas as pd
 import sqlite3
 from sqlite3 import Error
-
-#function to Create table 
-def create_table(conn, create_table_sql):
-    try:
-        c = conn.cursor()
-        c.execute(create_table_sql)
-    except Error as e:
-        print(e)
-
-
-def execute_sql_statement(sql_statement, conn):
-    cur = conn.cursor()
-    cur.execute(sql_statement)
-    rows = cur.fetchall()
-    return rows
-
-#function to drop the table
-def drop_table(conn, drop_table_sql):
-    try:
-        c = conn.cursor()
-        c.execute(drop_table_sql)
-    except Error as e:
-        print(e)    
+from genericdbcalls import create_table
+from genericdbcalls import execute_sql_statement
+from genericdbcalls import drop_table
 
 def insert_Tesla(conn, values):    
     sql = " INSERT INTO Tesla_Stock VALUES(?,?,?,?,?,?,?); "
