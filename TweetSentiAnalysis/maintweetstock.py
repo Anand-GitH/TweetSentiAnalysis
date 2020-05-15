@@ -22,6 +22,8 @@ from plotsaresults import plotdailystkprvar
 from plotsaresults import plotscores
 from plotsaresults import plotfinalinteract
 from genericdbcalls import create_connection
+from plotsaresults import plotstatisticssa
+from plotsaresults import plotstatisticssayear
 
 #StartTweetAnalysis - Start function of Project
 def maintweetstock():
@@ -43,6 +45,8 @@ def maintweetstock():
     plotpiechart(conn)
     plotdailystkprvar(conn)
     plotscores(conn)
+    plotstatisticssa(conn)
+    plotstatisticssayear(conn)
     plotfinalinteract(conn)
     
   except Error as e:

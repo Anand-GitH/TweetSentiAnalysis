@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import cufflinks as cf
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 
 def plotpiechart(conn):
     sql_statement='''SELECT count(1) count 
@@ -109,3 +110,100 @@ def plotfinalinteract(conn):
     
     fig.show()
     
+def plotstatisticssa(conn):
+    sql_statement='''SELECT score_polarity,stockstatus,count(1) total 
+                       FROM (SELECT distinct Tdate,Tweet_Text,Score_Polarity,Adj,stockstatus
+                               FROM (SELECT date(t.Creation_dt) TDate,t.Tweet_Text,t1.Score_Polarity,t1.Score,ts.Adj,
+                               CASE WHEN (close-open)<0 then 'D'
+                               WHEN (close-open)>0 then 'I'
+                               ELSE 'F'
+                               END as stockstatus 
+                               FROM Tesla_Stock ts,Tweet_data t,Tweet_Scores t1 
+                               WHERE t.ID=t1.ID and date(t.Creation_dt)=ts.Date)) 
+                      GROUP BY score_polarity,stockstatus;'''
+                      
+                      
+    df=pd.read_sql_query(sql_statement,conn)
+    incdata=df[df["stockstatus"]=="I"]
+    decdata=df[df["stockstatus"]=="D"]
+    flatdata=df[df["stockstatus"]=="F"]
+    
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=incdata["Score_Polarity"].tolist(),
+        y=incdata["total"].tolist(),
+        name='Rise in Stock Price',
+        marker_color='rgb(139,224,164)'
+    ))
+    fig.add_trace(go.Bar(
+        x=decdata["Score_Polarity"].tolist(),
+        y=decdata["total"].tolist(),
+        name='Fall in Stock Price',
+        marker_color='rgb(237,100,90)'
+    ))
+    fig.add_trace(go.Bar(
+        x=flatdata["Score_Polarity"].tolist(),
+        y=flatdata["total"].tolist(),
+        name='No Change in Stock Price',
+        marker_color='rgb(158,185,243)'
+    ))
+    
+    fig.update_layout(barmode='group',title_text='Statistics of Tweet Sentiment v/s Fluctuations',uniformtext_minsize=12, uniformtext_mode='hide')
+    fig.show()
+    
+def plotstatisticssayear(conn):
+    sql_statement='''SELECT strftime('%Y',Tdate) year,score_polarity,stockstatus,count(1) total 
+						   FROM (SELECT distinct Tdate,Tweet_Text,Score_Polarity,Adj,stockstatus
+								   FROM (SELECT date(t.Creation_dt) TDate,t.Tweet_Text,t1.Score_Polarity,t1.Score,ts.Adj,
+								   CASE WHEN (close-open)<0 then 'D'
+								   WHEN (close-open)>0 then 'I'
+								   ELSE 'F'
+								   END as stockstatus 
+								   FROM Tesla_Stock ts,Tweet_data t,Tweet_Scores t1 
+								   WHERE t.ID=t1.ID and date(t.Creation_dt)=ts.Date)) 
+						  GROUP BY year,score_polarity,stockstatus;'''
+    df=pd.read_sql_query(sql_statement,conn)
+    incdata=df[df["stockstatus"]=="I"]
+    decdata=df[df["stockstatus"]=="D"]
+    flatdata=df[df["stockstatus"]=="F"]
+    
+    fig = go.Figure()
+    
+    fig.add_trace(go.Bar(x=incdata["year"].tolist(),
+					y=incdata["total"].tolist(),
+					name='Rise in Stock Price',
+					marker_color='rgb(139,224,164)'
+					))
+    
+    fig.add_trace(go.Bar(x=decdata["year"].tolist(),
+					y=decdata["total"].tolist(),
+					name='Fall in Stock Price',
+					marker_color='rgb(237,100,90)'
+					))
+    
+    fig.add_trace(go.Bar(x=flatdata["year"].tolist(),
+					y=flatdata["total"].tolist(),
+					name='No change in Stock Price',
+					marker_color='rgb(158,185,243)'
+					))
+    
+    fig.update_layout(
+		title='Statistics of Stock Price Fluctuations by year',
+		xaxis_tickfont_size=14,
+		yaxis=dict(
+			title='Total',
+			titlefont_size=16,
+			tickfont_size=14,
+		),
+		legend=dict(
+			x=0,
+			y=1.0,
+			bgcolor='rgba(255, 255, 255, 0)',
+			bordercolor='rgba(255, 255, 255, 0)'
+		),
+		barmode='group',
+		bargap=0.15, 
+		bargroupgap=0.1 
+	)
+    
+    fig.show()
